@@ -9,7 +9,8 @@ export interface SpotifyImage {
 export interface SpotifyArtist {
   id: string;
   name: string;
-  genres: string[];
+  // Spotify omits or empties this for some artists — never assume it's populated.
+  genres?: string[];
   images: SpotifyImage[];
   popularity: number;
   external_urls: { spotify: string };

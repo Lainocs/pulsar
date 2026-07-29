@@ -53,7 +53,7 @@ export default function ArtistCard({
       >
         #{String(rank).padStart(2, "0")}
       </div>
-      {artist.genres[0] && (
+      {artist.genres?.[0] && (
         <div className="absolute top-3.5 right-4 font-mono text-[0.68rem]" style={{ color: accent }}>
           {artist.genres[0]}
         </div>
