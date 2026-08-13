@@ -12,7 +12,9 @@
  * runs here, offline, to produce plain PNG files — it is never imported by
  * the deployed Next.js app, so the running site isn't AGPL-encumbered.
  */
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+loadEnv({ path: ".env.local" });
+
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
