@@ -110,6 +110,18 @@ export async function getTopTracks(
   return data?.items ?? [];
 }
 
+export interface RecentPlay {
+  playedAt: string;
+  track: SpotifyTrack;
+}
+
+export async function getRecentlyPlayed(limit = 50): Promise<RecentPlay[]> {
+  const data = await spotifyFetch<{ items: { played_at: string; track: SpotifyTrack }[] }>(
+    `/me/player/recently-played?limit=${limit}`
+  );
+  return (data?.items ?? []).map((item) => ({ playedAt: item.played_at, track: item.track }));
+}
+
 export async function getStatsSummary(
   revalidateSeconds = 3600
 ): Promise<StatsSummary> {

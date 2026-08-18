@@ -9,6 +9,10 @@ export function formatNumber(n: number): string {
   return n.toLocaleString("fr-FR");
 }
 
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+}
+
 export function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diffMs / 60000);

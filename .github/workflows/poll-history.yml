@@ -1,0 +1,23 @@
+name: Poll Spotify listening history
+
+on:
+  schedule:
+    # Every 10 minutes. Spotify's recently-played endpoint only keeps the
+    # last 50 items, so this needs to run often enough not to miss plays.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit the poll-history endpoint
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.PULSAR_BASE_URL }}/api/cron/poll-history")
+          echo "HTTP $status"
+          cat /tmp/response.json
+          if [ "$status" -ge 300 ]; then
+            exit 1
+          fi

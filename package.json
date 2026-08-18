@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generate:cutouts": "tsx scripts/generate-artist-cutouts.ts"
+    "generate:cutouts": "tsx scripts/generate-artist-cutouts.ts",
+    "import:history": "tsx scripts/import-streaming-history.ts"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"

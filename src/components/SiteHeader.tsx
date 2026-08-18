@@ -12,6 +12,9 @@ export default function SiteHeader() {
           <a href="#stats" className="nav-link">
             Vue d&apos;ensemble
           </a>
+          <a href="#history" className="nav-link">
+            Historique
+          </a>
           <a href="#artists" className="nav-link">
             Top Artistes
           </a>

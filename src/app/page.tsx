@@ -4,7 +4,20 @@ import SiteHeader from "@/components/SiteHeader";
 import NowPlaying from "@/components/NowPlaying";
 import StatsRow from "@/components/StatsRow";
 import TopSection from "@/components/TopSection";
+import HistorySection from "@/components/HistorySection";
 import { getNowPlaying, getStatsSummary, getTopArtists, getTopTracks } from "@/lib/spotify/api";
+import { getListeningStats, type ListeningStats } from "@/lib/history";
+
+const EMPTY_HISTORY: ListeningStats = {
+  totalMinutes: 0,
+  trackedDays: 0,
+  currentStreakDays: 0,
+  earliestPlayedAt: null,
+  topArtists: [],
+  topTracks: [],
+  topAlbums: [],
+  dailyActivity: [],
+};
 
 // This route renders dynamically on every request because getNowPlaying()
 // always fetches fresh (`cache: "no-store"`). The top-artists/top-tracks/
@@ -27,6 +40,13 @@ export default async function Home() {
     return <SetupNotice />;
   }
   const { nowPlaying, stats, artists, tracks } = data;
+
+  let history = EMPTY_HISTORY;
+  try {
+    history = await getListeningStats();
+  } catch (err) {
+    console.error("[page] listening-history DB not reachable:", err);
+  }
 
   return (
     <>
@@ -53,6 +73,7 @@ export default async function Home() {
         </section>
 
         <StatsRow stats={stats} />
+        <HistorySection stats={history} />
         <TopSection initialArtists={artists} initialTracks={tracks} />
       </main>
 
