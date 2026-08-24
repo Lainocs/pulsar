@@ -5,6 +5,7 @@ import type { SpotifyArtist, SpotifyTrack, TimeRange } from "@/lib/spotify/types
 import ArtistCard from "@/components/ArtistCard";
 import TrackRow from "@/components/TrackRow";
 import Reveal from "@/components/Reveal";
+import SectionHeading from "@/components/SectionHeading";
 
 const ACCENTS = ["#00f0ff", "#ff2fd0", "#7c5cff", "#3dffb0", "#ffb020", "#ff5c5c", "#00f0ff", "#ff2fd0"];
 
@@ -66,13 +67,14 @@ export default function TopSection({
         ))}
       </div>
 
-      <section id="artists" className="mb-24">
-        <Reveal className="mb-9">
-          <div className="eyebrow">Top Artistes</div>
-          <h2 className="text-[2rem] font-bold tracking-tight mt-2">Ceux qui tournent en boucle</h2>
-          <p className="mt-2 max-w-md" style={{ color: "var(--text-dim)" }}>
-            Survole une carte : l&apos;artiste sort de son cadre.
-          </p>
+      <section id="artists" className="mb-28">
+        <Reveal>
+          <SectionHeading
+            index="04"
+            eyebrow="Top Artistes"
+            title="Ceux qui tournent en boucle"
+            description="Déplace le curseur sur une carte : la couleur revient sous la lumière."
+          />
         </Reveal>
         <div
           className="artist-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity"
@@ -89,13 +91,14 @@ export default function TopSection({
         )}
       </section>
 
-      <section id="tracks">
-        <Reveal className="mb-9">
-          <div className="eyebrow">Top Titres</div>
-          <h2 className="text-[2rem] font-bold tracking-tight mt-2">La playlist qui ne meurt jamais</h2>
-          <p className="mt-2 max-w-md" style={{ color: "var(--text-dim)" }}>
-            Les morceaux les plus rejoués sur la période.
-          </p>
+      <section id="tracks" className="mb-16">
+        <Reveal>
+          <SectionHeading
+            index="05"
+            eyebrow="Top Titres"
+            title="La playlist qui ne meurt jamais"
+            description="Les morceaux les plus rejoués sur la période."
+          />
         </Reveal>
         <Reveal>
           <div

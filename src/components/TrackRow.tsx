@@ -30,14 +30,17 @@ export default function TrackRow({
       href={track.external_urls.spotify}
       target="_blank"
       rel="noopener noreferrer"
-      className="track-row px-5 py-3.5"
+      className="track-row px-5 py-4"
       style={{ ["--accent" as string]: accent }}
     >
       <div className="font-mono text-[0.85rem]" style={{ color: "var(--text-dim)" }}>
         {String(rank).padStart(2, "0")}
       </div>
-      <div className="relative w-[46px] h-[46px] rounded-lg overflow-hidden" style={{ background: accent }}>
-        {art && <Image src={art} alt={track.album.name} fill sizes="46px" className="object-cover" />}
+      <div className="track-art relative w-[54px] h-[54px] rounded-xl overflow-hidden" style={{ background: accent }}>
+        {art && <Image src={art} alt={track.album.name} fill sizes="54px" className="object-cover" />}
+        <span className="track-art-play" style={{ color: accent }}>
+          ▶
+        </span>
       </div>
       <div className="min-w-0">
         <div className="font-semibold text-[0.94rem] truncate">{track.name}</div>

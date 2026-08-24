@@ -1,5 +1,6 @@
 import StatTile from "@/components/StatTile";
 import Reveal from "@/components/Reveal";
+import SectionHeading from "@/components/SectionHeading";
 import type { StatsSummary } from "@/lib/spotify/types";
 
 export default function StatsRow({ stats }: { stats: StatsSummary }) {
@@ -11,19 +12,24 @@ export default function StatsRow({ stats }: { stats: StatsSummary }) {
   ];
 
   return (
-    <section id="stats" className="mb-24">
-      <Reveal className="mb-9">
-        <div className="eyebrow">Vue d&apos;ensemble</div>
-        <h2 className="text-[2rem] font-bold tracking-tight mt-2">Le résumé, sans filtre</h2>
-        <p className="mt-2 max-w-md" style={{ color: "var(--text-dim)" }}>
-          Des chiffres réels, tirés directement de mon compte Spotify.
-          {stats.topGenre && (
+    <section id="stats" className="mb-28">
+      <Reveal>
+        <SectionHeading
+          index="02"
+          eyebrow="Vue d'ensemble"
+          title="Le résumé, sans filtre"
+          description={
             <>
-              {" "}
-              Genre dominant en ce moment : <b style={{ color: "var(--text)" }}>{stats.topGenre}</b>.
+              Des chiffres réels, tirés directement de mon compte Spotify.
+              {stats.topGenre && (
+                <>
+                  {" "}
+                  Genre dominant en ce moment : <b style={{ color: "var(--text)" }}>{stats.topGenre}</b>.
+                </>
+              )}
             </>
-          )}
-        </p>
+          }
+        />
       </Reveal>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
         {tiles.map((t) => (

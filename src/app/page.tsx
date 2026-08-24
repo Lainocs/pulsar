@@ -1,6 +1,7 @@
 import Starfield from "@/components/Starfield";
 import CursorGlow from "@/components/CursorGlow";
 import SiteHeader from "@/components/SiteHeader";
+import Marquee from "@/components/Marquee";
 import NowPlaying from "@/components/NowPlaying";
 import StatsRow from "@/components/StatsRow";
 import TopSection from "@/components/TopSection";
@@ -48,6 +49,11 @@ export default async function Home() {
     console.error("[page] listening-history DB not reachable:", err);
   }
 
+  const tickerItems =
+    artists.length > 0
+      ? artists.map((a) => a.name)
+      : ["connecte ton compte Spotify", "pour voir tes vrais artistes ici"];
+
   return (
     <>
       <Starfield />
@@ -55,20 +61,30 @@ export default async function Home() {
       <CursorGlow />
 
       <SiteHeader />
+      <Marquee items={tickerItems} />
 
       <main className="relative z-[3] max-w-[1180px] mx-auto px-8">
-        <section id="now" className="pt-24 pb-16 text-center">
-          <div className="eyebrow">{"// personal spotify intelligence"}</div>
-          <h1 className="title-gradient text-[clamp(2.6rem,6vw,4.6rem)] leading-[1.02] font-bold tracking-tight mt-5 mb-5">
-            Pulsar
-          </h1>
-          <p className="max-w-[560px] mx-auto text-[1.05rem] leading-relaxed" style={{ color: "var(--text-dim)" }}>
-            Le battement de <b style={{ color: "var(--text)" }}>mes</b> écoutes, en temps réel. Artistes, titres,
-            minutes obsessionnelles — tout ce que Spotify sait de moi, visualisé comme un cockpit.
-          </p>
+        <section id="now" className="relative pt-28 pb-20 text-center overflow-hidden">
+          <div className="hero-glow" />
+          <span className="section-num hero-num" aria-hidden="true">
+            01
+          </span>
+          <div className="relative z-[1]">
+            <div className="eyebrow">{"// personal spotify intelligence"}</div>
+            <div className="hero-title-wrap">
+              <h1 className="title-gradient title-glow" aria-hidden="true">
+                Pulsar
+              </h1>
+              <h1 className="title-gradient">Pulsar</h1>
+            </div>
+            <p className="max-w-[560px] mx-auto text-[1.05rem] leading-relaxed -mt-2" style={{ color: "var(--text-dim)" }}>
+              Le battement de <b style={{ color: "var(--text)" }}>mes</b> écoutes, en temps réel. Artistes, titres,
+              minutes obsessionnelles — tout ce que Spotify sait de moi, visualisé comme un cockpit.
+            </p>
 
-          <div className="max-w-[640px] mx-auto mt-14">
-            <NowPlaying initialData={nowPlaying} />
+            <div className="max-w-[640px] mx-auto mt-14">
+              <NowPlaying initialData={nowPlaying} />
+            </div>
           </div>
         </section>
 
@@ -105,9 +121,7 @@ function SetupNotice() {
       <div className="grid-overlay" />
       <main className="relative z-[3] max-w-[640px] mx-auto px-8 pt-32 text-center">
         <div className="eyebrow">{"// personal spotify intelligence"}</div>
-        <h1 className="title-gradient text-[clamp(2rem,5vw,3.2rem)] font-bold tracking-tight mt-5 mb-6">
-          Pulsar n&apos;est pas encore configuré
-        </h1>
+        <h1 className="title-gradient is-compact mt-5 mb-6">Pulsar n&apos;est pas encore configuré</h1>
         <p className="text-[1.05rem] leading-relaxed" style={{ color: "var(--text-dim)" }}>
           Il manque des variables d&apos;environnement Spotify (client ID/secret, refresh token…).
           Suis le guide de <code style={{ color: "var(--cyan)" }}>README.md</code> — créer l&apos;app

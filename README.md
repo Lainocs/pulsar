@@ -1,9 +1,9 @@
 # Pulsar
 
 Dashboard personnel de stats Spotify — now playing en direct, top artistes
-avec cartes 3D "pop-out", top titres, et quelques stats réelles tirées de
-l'API. Next.js 16 (App Router) + TypeScript, une seule identité Spotify (la
-tienne), pas de login visiteur : le profil est public en lecture seule.
+en cartes immersives, top titres, et un vrai historique d'écoute façon
+stats.fm. Next.js 16 (App Router) + TypeScript, une seule identité Spotify
+(la tienne), pas de login visiteur : le profil est public en lecture seule.
 
 ## Comment ça marche
 
@@ -21,11 +21,6 @@ tienne), pas de login visiteur : le profil est public en lecture seule.
   album, streak, heatmap façon GitHub) n'existe pas nativement dans l'API
   Spotify — comme stats.fm, on la construit nous-mêmes avec une petite
   base de données (voir section dédiée plus bas).
-- Les photos d'artistes viennent de Spotify (rectangulaires). Un script
-  hors-ligne (`npm run generate:cutouts`) leur retire le fond avec un
-  modèle IA local pour produire de vrais PNG détourés pour l'effet
-  "pop-out" 3D. Tant qu'un artiste n'a pas de PNG généré, sa carte retombe
-  automatiquement sur sa photo Spotify masquée en cercle.
 
 ## Prérequis
 
@@ -72,27 +67,7 @@ npm run dev
 Le token n'expire pas tant que tu ne révoques pas l'accès depuis ton compte
 Spotify (Apps connectées).
 
-## 5. Générer les cutouts d'artistes (optionnel mais recommandé)
-
-```bash
-npm run generate:cutouts
-```
-
-Ça télécharge les photos de tes top artistes (les 3 périodes confondues),
-retire le fond localement, et écrit les PNG dans `public/artists/` +
-`public/artists/manifest.json`. À relancer de temps en temps quand ton top
-artistes change (le script skip automatiquement ce qui n'a pas changé).
-Committe les fichiers générés comme n'importe quel asset statique.
-
-> Le script utilise `@imgly/background-removal-node`, sous licence **AGPL**.
-> Il ne tourne qu'en local/CI, jamais dans l'app déployée — seuls les PNG
-> qu'il produit sont servis par le site. `npm audit` remonte des CVE sur
-> ses dépendances internes (sharp/lodash/zod embarqués, non maintenues) ;
-> comme le script ne traite que des images téléchargées depuis le CDN
-> Spotify et ne tourne jamais en prod, le risque réel est faible, mais bon
-> à savoir si tu regardes `npm audit`.
-
-## 6. Historique d'écoute façon stats.fm (optionnel)
+## 5. Historique d'écoute façon stats.fm (optionnel)
 
 L'API Spotify ne donne ni minutes totales par artiste/titre, ni historique
 au-delà des 50 derniers titres joués. On reconstruit ça nous-mêmes avec une
@@ -106,7 +81,7 @@ petite base **Turso (libSQL)**, alimentée de deux façons complémentaires :
   la durée du titre) pour avoir des stats profondes immédiatement au lieu
   d'attendre que le suivi continu s'accumule.
 
-### 6.1 Créer la base Turso
+### 5.1 Créer la base Turso
 
 ```bash
 # https://docs.turso.tech/cli/installation
@@ -121,7 +96,7 @@ automatiquement un fichier SQLite local (`./data/pulsar.db`) — pratique
 pour tester sans compte Turso, mais **ne marche pas sur Vercel** (pas de
 disque persistant) : Turso est obligatoire en prod sur Vercel.
 
-### 6.2 Activer le suivi continu
+### 5.2 Activer le suivi continu
 
 1. Ajoute `CRON_SECRET` dans `.env.local` (encore un `openssl rand -hex 32`).
 2. Une fois déployé, configure deux secrets sur le repo GitHub (Settings →
@@ -137,7 +112,7 @@ disque persistant) : Turso est obligatoire en prod sur Vercel.
    */10 * * * * curl -s -H "Authorization: Bearer <CRON_SECRET>" https://ton-domaine/api/cron/poll-history
    ```
 
-### 6.3 Importer ton historique existant
+### 5.3 Importer ton historique existant
 
 1. Sur Spotify : Compte → Confidentialité → "Demander mes données" → coche
    spécifiquement **Extended streaming history** (l'export basique ne
