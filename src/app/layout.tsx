@@ -1,34 +1,28 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Newsreader, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "Pulsar — mes stats Spotify",
-  description:
-    "Dashboard personnel : ce que j'écoute en ce moment, mes artistes et titres du moment, en direct depuis l'API Spotify.",
+  title: "pulsar",
+  description: "Ce que j'écoute en ce moment, et ce que j'ai écouté avant. Relevé tout seul depuis Spotify.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="fr"
-      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full font-sans" style={{ fontFamily: "var(--font-sans)" }}>
-        {children}
-      </body>
+    <html lang="fr" className={`${newsreader.variable} ${plexMono.variable} antialiased`}>
+      <body>{children}</body>
     </html>
   );
 }

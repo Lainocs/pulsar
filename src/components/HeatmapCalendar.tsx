@@ -1,68 +1,63 @@
-function bucket(minutes: number, max: number): number {
-  if (minutes <= 0) return 0;
-  const ratio = minutes / max;
-  if (ratio > 0.75) return 4;
-  if (ratio > 0.5) return 3;
-  if (ratio > 0.25) return 2;
-  return 1;
+const MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+
+function dayKey(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
-const BUCKET_COLORS = [
-  "rgba(255,255,255,0.06)",
-  "color-mix(in srgb, var(--cyan) 25%, transparent)",
-  "color-mix(in srgb, var(--cyan) 50%, transparent)",
-  "color-mix(in srgb, var(--cyan) 75%, transparent)",
-  "var(--cyan)",
-];
+function shade(minutes: number, max: number): string {
+  if (minutes <= 0) return "var(--faint)";
+  const ratio = Math.min(minutes / max, 1);
+  // 4 steps, from a light wash of the accent to the full accent
+  const pct = [30, 55, 78, 100][Math.min(3, Math.floor(ratio * 4))];
+  return `color-mix(in srgb, var(--accent) ${pct}%, var(--faint))`;
+}
 
 export default function HeatmapCalendar({ data }: { data: { day: string; minutes: number }[] }) {
   const byDay = new Map(data.map((d) => [d.day, d.minutes]));
-  const max = Math.max(1, ...data.map((d) => d.minutes));
+  // Cap the scale so one marathon day doesn't wash out everything else.
+  const sorted = data.map((d) => d.minutes).sort((a, b) => a - b);
+  const max = Math.max(1, sorted[Math.floor(sorted.length * 0.95)] ?? 1);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const start = new Date(today);
-  start.setDate(start.getDate() - 139); // ~20 weeks
-  // Align the grid to start on a Sunday for a clean weekly grid.
-  start.setDate(start.getDate() - start.getDay());
+  start.setDate(start.getDate() - 7 * 26);
+  // weeks start on Monday
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
 
-  const weeks: { date: Date; minutes: number }[][] = [];
-  let week: { date: Date; minutes: number }[] = [];
+  const cells: React.ReactNode[] = [];
   const cursor = new Date(start);
+  let lastMonth = -1;
+  let week = 0;
   while (cursor <= today) {
-    const key = cursor.toISOString().slice(0, 10);
-    week.push({ date: new Date(cursor), minutes: byDay.get(key) ?? 0 });
-    if (week.length === 7) {
-      weeks.push(week);
-      week = [];
+    if (cursor.getDay() === 1) {
+      const month = cursor.getMonth();
+      cells.push(
+        <span key={`m${week}`} className="month">
+          {month !== lastMonth && cursor.getDate() <= 7 ? MONTHS[month] : ""}
+        </span>
+      );
+      if (cursor.getDate() <= 7) lastMonth = month;
+      week++;
     }
+    const minutes = byDay.get(dayKey(cursor)) ?? 0;
+    cells.push(
+      <span
+        key={dayKey(cursor)}
+        className="cell"
+        title={`${cursor.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} : ${minutes} min`}
+        style={{ background: shade(minutes, max) }}
+      />
+    );
     cursor.setDate(cursor.getDate() + 1);
   }
-  if (week.length > 0) weeks.push(week);
 
   return (
-    <div>
-      <div className="flex gap-[3px] overflow-x-auto pb-2">
-        {weeks.map((w, wi) => (
-          <div key={wi} className="flex flex-col gap-[3px]">
-            {w.map((d, di) => (
-              <div
-                key={di}
-                title={`${d.date.toLocaleDateString("fr-FR")} — ${d.minutes} min`}
-                className="w-[11px] h-[11px] rounded-[3px]"
-                style={{ background: BUCKET_COLORS[bucket(d.minutes, max)] }}
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-1.5 mt-3 font-mono text-[0.68rem]" style={{ color: "var(--text-dim)" }}>
-        <span>moins</span>
-        {BUCKET_COLORS.map((c, i) => (
-          <span key={i} className="w-[11px] h-[11px] rounded-[3px]" style={{ background: c }} />
-        ))}
-        <span>plus</span>
-      </div>
+    <div className="heatmap">
+      <div className="heatmap-grid">{cells}</div>
+      <p className="mono muted mt-2">Six derniers mois, un carré par jour. Plus c&apos;est rouge, plus j&apos;ai écouté.</p>
     </div>
   );
 }

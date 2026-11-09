@@ -1,13 +1,10 @@
-import Starfield from "@/components/Starfield";
-import CursorGlow from "@/components/CursorGlow";
-import SiteHeader from "@/components/SiteHeader";
-import Marquee from "@/components/Marquee";
 import NowPlaying from "@/components/NowPlaying";
-import StatsRow from "@/components/StatsRow";
 import TopSection from "@/components/TopSection";
 import HistorySection from "@/components/HistorySection";
 import { getNowPlaying, getStatsSummary, getTopArtists, getTopTracks } from "@/lib/spotify/api";
 import { getListeningStats, type ListeningStats } from "@/lib/history";
+import type { StatsSummary } from "@/lib/spotify/types";
+import { formatNumber } from "@/lib/format";
 
 const EMPTY_HISTORY: ListeningStats = {
   totalMinutes: 0,
@@ -33,7 +30,7 @@ export default async function Home() {
       getNowPlaying(),
       getStatsSummary(),
       getTopArtists("medium_term", 8),
-      getTopTracks("medium_term", 8),
+      getTopTracks("medium_term", 10),
     ]);
     data = { nowPlaying, stats, artists, tracks };
   } catch (err) {
@@ -49,87 +46,66 @@ export default async function Home() {
     console.error("[page] listening-history DB not reachable:", err);
   }
 
-  const tickerItems =
-    artists.length > 0
-      ? artists.map((a) => a.name)
-      : ["connecte ton compte Spotify", "pour voir tes vrais artistes ici"];
-
   return (
-    <>
-      <Starfield />
-      <div className="grid-overlay" />
-      <CursorGlow />
+    <div className="page">
+      <header className="masthead">
+        <a href="#now" className="wordmark">
+          pulsar
+        </a>
+        <nav className="text-[0.95rem]">
+          <a href="#temps">le temps passé</a>
+          <a href="#classement">le classement</a>
+        </nav>
+      </header>
 
-      <SiteHeader />
-      <Marquee items={tickerItems} />
-
-      <main className="relative z-[3] max-w-[1180px] mx-auto px-8">
-        <section id="now" className="relative pt-28 pb-20 text-center overflow-hidden">
-          <div className="hero-glow" />
-          <span className="section-num hero-num" aria-hidden="true">
-            01
-          </span>
-          <div className="relative z-[1]">
-            <div className="eyebrow">{"// personal spotify intelligence"}</div>
-            <div className="hero-title-wrap">
-              <h1 className="title-gradient title-glow" aria-hidden="true">
-                Pulsar
-              </h1>
-              <h1 className="title-gradient">Pulsar</h1>
-            </div>
-            <p className="max-w-[560px] mx-auto text-[1.05rem] leading-relaxed -mt-2" style={{ color: "var(--text-dim)" }}>
-              Le battement de <b style={{ color: "var(--text)" }}>mes</b> écoutes, en temps réel. Artistes, titres,
-              minutes obsessionnelles — tout ce que Spotify sait de moi, visualisé comme un cockpit.
-            </p>
-
-            <div className="max-w-[640px] mx-auto mt-14">
-              <NowPlaying initialData={nowPlaying} />
-            </div>
-          </div>
-        </section>
-
-        <StatsRow stats={stats} />
+      <main>
+        <NowPlaying initialData={nowPlaying} />
         <HistorySection stats={history} />
         <TopSection initialArtists={artists} initialTracks={tracks} />
+        <AccountNotes stats={stats} />
       </main>
 
-      <footer className="relative z-[3] border-t mt-10" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-        <div
-          className="max-w-[1180px] mx-auto px-8 py-9 flex flex-wrap items-center justify-between gap-3 text-[0.85rem]"
-          style={{ color: "var(--text-dim)" }}
-        >
-          <span>Pulsar — dashboard perso, connecté en direct à l&apos;API Spotify.</span>
-          <a
-            href="https://github.com/Lainocs/pulsar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-            style={{ color: "var(--text)" }}
-          >
-            Voir sur GitHub
-          </a>
-        </div>
+      <footer className="colophon text-[0.95rem]">
+        <span>Les écoutes sont relevées toutes les 10 minutes.</span>
+        <a href="https://github.com/Lainocs/pulsar" target="_blank" rel="noopener noreferrer">
+          Le code est sur GitHub
+        </a>
       </footer>
-    </>
+    </div>
+  );
+}
+
+function AccountNotes({ stats }: { stats: StatsSummary }) {
+  const genres = stats.genreBreakdown.slice(0, 6).map((g) => g.genre);
+  return (
+    <section className="block">
+      <h3>En vrac</h3>
+      <p className="lede" style={{ marginTop: 0 }}>
+        <strong>{formatNumber(stats.savedTrackCount)}</strong> titres likés,{" "}
+        <strong>{formatNumber(stats.followedArtistCount)}</strong> artistes suivis,{" "}
+        <strong>{formatNumber(stats.playlistCount)}</strong> playlists. Les 50 derniers morceaux
+        représentent <strong>{formatNumber(stats.recentMinutes)}</strong> minutes.
+        {genres.length > 0 && <> Les genres qui reviennent le plus : {genres.join(", ")}.</>}
+      </p>
+    </section>
   );
 }
 
 function SetupNotice() {
   return (
-    <>
-      <Starfield />
-      <div className="grid-overlay" />
-      <main className="relative z-[3] max-w-[640px] mx-auto px-8 pt-32 text-center">
-        <div className="eyebrow">{"// personal spotify intelligence"}</div>
-        <h1 className="title-gradient is-compact mt-5 mb-6">Pulsar n&apos;est pas encore configuré</h1>
-        <p className="text-[1.05rem] leading-relaxed" style={{ color: "var(--text-dim)" }}>
-          Il manque des variables d&apos;environnement Spotify (client ID/secret, refresh token…).
-          Suis le guide de <code style={{ color: "var(--cyan)" }}>README.md</code> — créer l&apos;app
-          Spotify, remplir <code style={{ color: "var(--cyan)" }}>.env.local</code>, puis passer par{" "}
-          <code style={{ color: "var(--cyan)" }}>/api/auth/login?key=…</code> pour obtenir un refresh
-          token.
+    <div className="page">
+      <header className="masthead">
+        <span className="wordmark">pulsar</span>
+      </header>
+      <main className="now">
+        <h1 className="now-intro">Pas encore branché.</h1>
+        <p className="lede">
+          Il manque les variables Spotify (client ID, secret, refresh token). Tout est expliqué dans le{" "}
+          <code className="mono">README.md</code> : créer l&apos;app Spotify, remplir{" "}
+          <code className="mono">.env.local</code>, puis passer par{" "}
+          <code className="mono">/api/auth/login?key=…</code> pour récupérer le refresh token.
         </p>
       </main>
-    </>
+    </div>
   );
 }

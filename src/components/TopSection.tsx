@@ -4,15 +4,11 @@ import { useEffect, useState } from "react";
 import type { SpotifyArtist, SpotifyTrack, TimeRange } from "@/lib/spotify/types";
 import ArtistCard from "@/components/ArtistCard";
 import TrackRow from "@/components/TrackRow";
-import Reveal from "@/components/Reveal";
-import SectionHeading from "@/components/SectionHeading";
-
-const ACCENTS = ["#00f0ff", "#ff2fd0", "#7c5cff", "#3dffb0", "#ffb020", "#ff5c5c", "#00f0ff", "#ff2fd0"];
 
 const RANGES: { key: TimeRange; label: string }[] = [
-  { key: "short_term", label: "4 dernières semaines" },
-  { key: "medium_term", label: "6 derniers mois" },
-  { key: "long_term", label: "Depuis toujours" },
+  { key: "short_term", label: "le dernier mois" },
+  { key: "medium_term", label: "6 mois" },
+  { key: "long_term", label: "depuis le début" },
 ];
 
 export default function TopSection({
@@ -29,16 +25,20 @@ export default function TopSection({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (cache[range]) return; // already fetched (or seeded) this range
+    if (cache[range]) return;
     let cancelled = false;
     Promise.all([
       fetch(`/api/top-artists?range=${range}`).then((r) => r.json()),
       fetch(`/api/top-tracks?range=${range}`).then((r) => r.json()),
-    ]).then(([a, t]) => {
-      if (cancelled) return;
-      setCache((prev) => ({ ...prev, [range]: { artists: a.items ?? [], tracks: t.items ?? [] } }));
-      setLoading(false);
-    });
+    ])
+      .then(([a, t]) => {
+        if (cancelled) return;
+        setCache((prev) => ({
+          ...prev,
+          [range]: { artists: a.items ?? [], tracks: (t.items ?? []).slice(0, 10) },
+        }));
+      })
+      .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
@@ -51,69 +51,47 @@ export default function TopSection({
   }
 
   const { artists, tracks } = cache[range] ?? { artists: [], tracks: [] };
-  const maxPopularity = Math.max(1, ...artists.map((a) => a.popularity));
 
   return (
-    <>
-      <div className="flex flex-wrap gap-2.5 mb-10">
-        {RANGES.map((r) => (
-          <button
-            key={r.key}
-            onClick={() => selectRange(r.key)}
-            className={`range-tab ${range === r.key ? "is-active" : ""}`}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      <section id="artists" className="mb-28">
-        <Reveal>
-          <SectionHeading
-            index="04"
-            eyebrow="Top Artistes"
-            title="Ceux qui tournent en boucle"
-            description="Déplace le curseur sur une carte : la couleur revient sous la lumière."
-          />
-        </Reveal>
-        <div
-          className="artist-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity"
-          style={{ opacity: loading ? 0.5 : 1 }}
-        >
-          {artists.map((artist, i) => (
-            <Reveal key={artist.id}>
-              <ArtistCard artist={artist} rank={i + 1} accent={ACCENTS[i % ACCENTS.length]} maxPopularity={maxPopularity} />
-            </Reveal>
+    <section id="classement" className="block">
+      <div className="section-head">
+        <h2>Le classement</h2>
+        <div className="range" role="group" aria-label="Période">
+          {RANGES.map((r) => (
+            <button key={r.key} onClick={() => selectRange(r.key)} aria-pressed={range === r.key}>
+              {r.label}
+            </button>
           ))}
         </div>
-        {artists.length === 0 && !loading && (
-          <p style={{ color: "var(--text-dim)" }}>Pas assez de données Spotify pour cette période.</p>
-        )}
-      </section>
+      </div>
+      <p className="lede">
+        Celui que Spotify calcule de son côté. Il ne dit pas comment, et il ne tombe pas toujours
+        d&apos;accord avec mes minutes réelles au-dessus.
+      </p>
 
-      <section id="tracks" className="mb-16">
-        <Reveal>
-          <SectionHeading
-            index="05"
-            eyebrow="Top Titres"
-            title="La playlist qui ne meurt jamais"
-            description="Les morceaux les plus rejoués sur la période."
-          />
-        </Reveal>
-        <Reveal>
-          <div
-            className="rounded-[18px] overflow-hidden border transition-opacity"
-            style={{ borderColor: "var(--panel-border)", opacity: loading ? 0.5 : 1 }}
-          >
-            {tracks.map((track, i) => (
-              <TrackRow key={track.id} track={track} rank={i + 1} accent={ACCENTS[i % ACCENTS.length]} />
+      <div style={{ opacity: loading ? 0.4 : 1, transition: "opacity .2s" }}>
+        <h3 className="mt-10">Artistes</h3>
+        {artists.length > 0 ? (
+          <ol className="artists">
+            {artists.map((artist, i) => (
+              <ArtistCard key={artist.id} artist={artist} rank={i + 1} />
             ))}
-          </div>
-        </Reveal>
-        {tracks.length === 0 && !loading && (
-          <p style={{ color: "var(--text-dim)" }}>Pas assez de données Spotify pour cette période.</p>
+          </ol>
+        ) : (
+          !loading && <p className="muted">Pas assez de données sur cette période.</p>
         )}
-      </section>
-    </>
+
+        <h3 className="mt-12">Morceaux</h3>
+        {tracks.length > 0 ? (
+          <ol className="tracks">
+            {tracks.map((track, i) => (
+              <TrackRow key={track.id} track={track} rank={i + 1} />
+            ))}
+          </ol>
+        ) : (
+          !loading && <p className="muted">Pas assez de données sur cette période.</p>
+        )}
+      </div>
+    </section>
   );
 }
